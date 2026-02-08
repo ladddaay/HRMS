@@ -35,5 +35,4 @@ public class DesignationMapper {
                 .map(this::toResponse)
                 .toList();
     }
-
 }

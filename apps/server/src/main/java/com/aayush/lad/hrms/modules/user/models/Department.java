@@ -1,5 +1,6 @@
 package com.aayush.lad.hrms.modules.user.models;
 
+import com.aayush.lad.hrms.modules.user.dtos.department.write.UpdateDepartmentRequest;
 import com.aayush.lad.hrms.shared.base_models.AuditableModel;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,4 +16,9 @@ public class Department extends AuditableModel {
 
     @Column(nullable = false, unique = true)
     private String name;
+
+
+    public void update(UpdateDepartmentRequest request) {
+        this.name = request.getName();
+    }
 }

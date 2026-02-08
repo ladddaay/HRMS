@@ -1,5 +1,7 @@
 package com.aayush.lad.hrms.modules.user.services;
 
+import com.aayush.lad.hrms.core.exeptions.ConflictException;
+import com.aayush.lad.hrms.core.exeptions.NotFoundException;
 import com.aayush.lad.hrms.modules.user.dtos.designation.read.DesignationResponse;
 import com.aayush.lad.hrms.modules.user.dtos.designation.write.CreateDesignationRequest;
 import com.aayush.lad.hrms.modules.user.dtos.designation.write.UpdateDesignationRequest;
@@ -21,10 +23,12 @@ public class DesignationService {
 
     public DesignationResponse create(CreateDesignationRequest request) {
         if (designationRepository.existsByName(request.getName())) {
-            throw new IllegalArgumentException("Designation with name '" + request.getName() + "' already exists");
+            throw new ConflictException("Designation with name '" + request.getName() + "' already exists");
         }
+
         Designation designation = designationMapper.toEntity(request);
         Designation savedDesignation = designationRepository.save(designation);
+
         return designationMapper.toResponse(savedDesignation);
     }
 
@@ -34,28 +38,36 @@ public class DesignationService {
     }
 
     public DesignationResponse getById(UUID id) {
-        Designation designation = designationRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Designation not found with id: " + id));
+        Designation designation = designationRepository.findById(id).orElse(null);
+
+        if (designation == null) {
+            throw new NotFoundException("Designation not found");
+        }
+
         return designationMapper.toResponse(designation);
     }
 
     public DesignationResponse update(UpdateDesignationRequest request) {
-        Designation designation = designationRepository.findById(UUID.fromString(request.getId().toString()))
-                .orElseThrow(() -> new IllegalArgumentException("Designation not found with id: " + request.getId()));
+        Designation designation = designationRepository.findById(request.getId()).orElse(null);
+
+        if (designation == null) {
+            throw new NotFoundException("Designation not found");
+        }
 
         if (!designation.getName().equals(request.getName()) && 
             designationRepository.existsByName(request.getName())) {
-            throw new IllegalArgumentException("Designation with name '" + request.getName() + "' already exists");
+            throw new ConflictException("Designation with name '" + request.getName() + "' already exists");
         }
 
-        designation.setName(request.getName());
+        designation.update(request);
         Designation updatedDesignation = designationRepository.save(designation);
+
         return designationMapper.toResponse(updatedDesignation);
     }
 
     public void delete(UUID id) {
         if (!designationRepository.existsById(id)) {
-            throw new IllegalArgumentException("Designation not found with id: " + id);
+            throw new NotFoundException("Designation not found");
         }
         // TODO: soft delete
         designationRepository.deleteById(id);

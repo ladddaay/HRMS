@@ -1,5 +1,7 @@
 package com.aayush.lad.hrms.modules.user.services;
 
+import com.aayush.lad.hrms.core.exeptions.ConflictException;
+import com.aayush.lad.hrms.core.exeptions.NotFoundException;
 import com.aayush.lad.hrms.modules.user.dtos.department.read.DepartmentResponse;
 import com.aayush.lad.hrms.modules.user.dtos.department.write.CreateDepartmentRequest;
 import com.aayush.lad.hrms.modules.user.dtos.department.write.UpdateDepartmentRequest;
@@ -21,10 +23,12 @@ public class DepartmentService {
 
     public DepartmentResponse create(CreateDepartmentRequest request) {
         if (departmentRepository.existsByName(request.getName())) {
-            throw new IllegalArgumentException("Department with name '" + request.getName() + "' already exists");
+            throw new ConflictException("Department with name '" + request.getName() + "' already exists");
         }
+
         Department department = departmentMapper.toEntity(request);
         Department savedDepartment = departmentRepository.save(department);
+
         return departmentMapper.toResponse(savedDepartment);
     }
 
@@ -34,28 +38,36 @@ public class DepartmentService {
     }
 
     public DepartmentResponse getById(UUID id) {
-        Department department = departmentRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Department not found with id: " + id));
+        Department department = departmentRepository.findById(id).orElse(null);
+
+        if (department == null) {
+            throw new NotFoundException("Department not found");
+        }
+
         return departmentMapper.toResponse(department);
     }
 
     public DepartmentResponse update(UpdateDepartmentRequest request) {
-        Department department = departmentRepository.findById(request.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Department not found with id: " + request.getId()));
+        Department department = departmentRepository.findById(request.getId()).orElse(null);
+
+        if (department == null) {
+            throw new NotFoundException("Department not found");
+        }
 
         if (!department.getName().equals(request.getName()) &&
                 departmentRepository.existsByName(request.getName())) {
-            throw new IllegalArgumentException("Department with name '" + request.getName() + "' already exists");
+            throw new ConflictException("Department with name '" + request.getName() + "' already exists");
         }
 
-        department.setName(request.getName());
+        department.update(request);
         Department updatedDepartment = departmentRepository.save(department);
+
         return departmentMapper.toResponse(updatedDepartment);
     }
 
     public void delete(UUID id) {
         if (!departmentRepository.existsById(id)) {
-            throw new IllegalArgumentException("Department not found with id: " + id);
+            throw new NotFoundException("Department not found with id: " + id);
         }
         // TODO: soft delete
         departmentRepository.deleteById(id);
