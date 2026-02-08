@@ -1,29 +1,19 @@
 package com.aayush.lad.hrms.modules.user.models;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import com.aayush.lad.hrms.modules.games.models.Game;
-import com.aayush.lad.hrms.shared.base_models.SoftDeletableModel;
-
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import com.aayush.lad.hrms.shared.base_models.AuditableModel;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Entity
 @Table(name = "users")
 @EqualsAndHashCode(callSuper = true)
-public class User extends SoftDeletableModel {
+public class User extends AuditableModel {
 
     @Column(unique = true, nullable = false)
     private String userName;
@@ -38,9 +28,9 @@ public class User extends SoftDeletableModel {
 
     @ManyToMany
     @JoinTable(
-            name = "user_roles", // Name of the join table
-            joinColumns = @JoinColumn(name = "user_id"), // Column in the join table that refers to User
-            inverseJoinColumns = @JoinColumn(name = "role_id") // Column in the join table that refers to Role
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles = new HashSet<>();
 

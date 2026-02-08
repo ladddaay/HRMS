@@ -4,6 +4,9 @@ import com.aayush.lad.hrms.shared.base_models.BaseModel;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -19,4 +22,7 @@ public class Notification extends BaseModel {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @CreationTimestamp
+    private LocalDateTime createdAt;
 }
